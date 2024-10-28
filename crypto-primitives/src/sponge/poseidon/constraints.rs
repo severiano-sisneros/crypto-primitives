@@ -1,11 +1,10 @@
-use crate::sponge::constraints::AbsorbGadget;
-use crate::sponge::constraints::{CryptographicSpongeVar, SpongeWithGadget};
-use crate::sponge::poseidon::{PoseidonConfig, PoseidonSponge};
-use crate::sponge::DuplexSpongeMode;
-
+use crate::sponge::{
+    constraints::{AbsorbGadget, CryptographicSpongeVar, SpongeWithGadget},
+    poseidon::{PoseidonConfig, PoseidonSponge},
+    DuplexSpongeMode,
+};
 use ark_ff::PrimeField;
-use ark_r1cs_std::fields::fp::FpVar;
-use ark_r1cs_std::prelude::*;
+use ark_r1cs_std::{fields::fp::FpVar, prelude::*};
 use ark_relations::r1cs::{ConstraintSystemRef, SynthesisError};
 #[cfg(not(feature = "std"))]
 use ark_std::vec::Vec;
@@ -169,12 +168,13 @@ impl<F: PrimeField> PoseidonSpongeVar<F> {
                     ..(self.parameters.capacity + num_elements_squeezed + rate_start_index)],
             );
 
-            // Unless we are done with squeezing in this call, permute.
-            if remaining_output.len() != self.parameters.rate {
-                self.permute()?;
-            }
             // Repeat with updated output slices and rate start index
             remaining_output = &mut remaining_output[num_elements_squeezed..];
+
+            // Unless we are done with squeezing in this call, permute.
+            if !remaining_output.is_empty() {
+                self.permute()?;
+            }
             rate_start_index = 0;
         }
     }
@@ -223,7 +223,6 @@ impl<F: PrimeField> CryptographicSpongeVar<F, PoseidonSponge<F>> for PoseidonSpo
             DuplexSpongeMode::Squeezing {
                 next_squeeze_index: _,
             } => {
-                self.permute()?;
                 self.absorb_internal(0, input.as_slice())?;
             }
         };

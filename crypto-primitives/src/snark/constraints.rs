@@ -1,17 +1,19 @@
 use ark_ff::{BigInteger, PrimeField};
-use ark_r1cs_std::fields::{
-    emulated_fp::{
-        params::{get_params, OptimizationType},
-        AllocatedEmulatedFpVar, EmulatedFpVar,
+use ark_r1cs_std::{
+    fields::{
+        emulated_fp::{
+            params::{get_params, OptimizationType},
+            AllocatedEmulatedFpVar, EmulatedFpVar,
+        },
+        fp::{AllocatedFp, FpVar},
     },
-    fp::{AllocatedFp, FpVar},
+    prelude::*,
 };
-use ark_r1cs_std::prelude::*;
-use ark_relations::r1cs::OptimizationGoal;
 use ark_relations::{
     lc, ns,
     r1cs::{
-        ConstraintSynthesizer, ConstraintSystemRef, LinearCombination, Namespace, SynthesisError,
+        ConstraintSynthesizer, ConstraintSystemRef, LinearCombination, Namespace, OptimizationGoal,
+        SynthesisError,
     },
 };
 use ark_snark::{CircuitSpecificSetupSNARK, UniversalSetupSNARK, SNARK};
@@ -30,9 +32,9 @@ pub trait SNARKGadget<F: PrimeField, ConstraintF: PrimeField, S: SNARK<F>> {
 
     /// Information about the R1CS constraints required to check proofs relative
     /// a given verification key. In the context of a LPCP-based pairing-based SNARK
-    /// like that of [[Groth16]](https://eprint.iacr.org/2016/260),
+    /// like that of [Groth16](https://eprint.iacr.org/2016/260),
     /// this is independent of the R1CS matrices,
-    /// whereas for more "complex" SNARKs like [[Marlin]](https://eprint.iacr.org/2019/1047),
+    /// whereas for more "complex" SNARKs like [Marlin](https://eprint.iacr.org/2019/1047),
     /// this can encode information about the highest degree of polynomials
     /// required to verify proofs.
     type VerifierSize: PartialOrd + Clone + fmt::Debug;

@@ -3,15 +3,16 @@ use ark_ec::{
     twisted_edwards::TECurveConfig as TEModelParameters, CurveConfig as ModelParameters,
 };
 use ark_ff::{Field, PrimeField};
-use ark_r1cs_std::boolean::Boolean;
-use ark_r1cs_std::convert::{ToBytesGadget, ToConstraintFieldGadget};
-use ark_r1cs_std::fields::fp::FpVar;
-use ark_r1cs_std::fields::{FieldOpsBounds, FieldVar};
-use ark_r1cs_std::groups::curves::short_weierstrass::{
-    AffineVar as SWAffineVar, ProjectiveVar as SWProjectiveVar,
+use ark_r1cs_std::{
+    boolean::Boolean,
+    convert::{ToBytesGadget, ToConstraintFieldGadget},
+    fields::{fp::FpVar, FieldOpsBounds, FieldVar},
+    groups::curves::{
+        short_weierstrass::{AffineVar as SWAffineVar, ProjectiveVar as SWProjectiveVar},
+        twisted_edwards::AffineVar as TEAffineVar,
+    },
+    uint8::UInt8,
 };
-use ark_r1cs_std::groups::curves::twisted_edwards::AffineVar as TEAffineVar;
-use ark_r1cs_std::uint8::UInt8;
 use ark_relations::r1cs::SynthesisError;
 #[cfg(not(feature = "std"))]
 use ark_std::vec::Vec;
@@ -213,9 +214,9 @@ impl<F: PrimeField, A: AbsorbGadget<F>> AbsorbGadget<F> for &A {
     }
 }
 
-/// Individually absorbs each element in a comma-separated list of [`Absorbable`]s into a sponge.
+/// Individually absorbs each element in a comma-separated list of [`AbsorbGadget`]s into a sponge.
 /// Format is `absorb!(s, a_0, a_1, ..., a_n)`, where `s` is a mutable reference to a sponge
-/// and each `a_i` implements `AbsorbableVar`.
+/// and each `a_i` implements [`AbsorbGadget`].
 #[macro_export]
 macro_rules! absorb_gadget {
     ($sponge:expr, $($absorbable:expr),+ ) => {
@@ -225,7 +226,7 @@ macro_rules! absorb_gadget {
     };
 }
 
-/// Quickly convert a list of different [`Absorbable`]s into sponge field elements.
+/// Quickly convert a list of different [`AbsorbGadget`]s into sponge field elements.
 #[macro_export]
 macro_rules! collect_sponge_field_elements_gadget {
     ($head:expr $(, $tail:expr)* ) => {
