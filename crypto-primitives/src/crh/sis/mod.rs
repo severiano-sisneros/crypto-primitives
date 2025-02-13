@@ -144,4 +144,30 @@ mod test {
         let _ = CRH::<Fr, TestHash>::evaluate(&parameters, input).unwrap();
         println!("Done");
     }
+
+    #[test]
+    #[should_panic]
+    fn test_sis_input_len() {
+        let rng = &mut test_rng();
+        let parameters = CRH::<Fr, TestHash>::setup(rng).unwrap();
+        let input: Vec<Fr> = (0..INPUT_LEN-1)
+            .map(|_| Fr::from(rng.gen::<u64>() % (TestHash::BETA as u64)))
+            .collect();
+        // input length is not equal to N
+        let _ = CRH::<Fr, TestHash>::evaluate(&parameters, input).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_sis_input_range() {
+        let rng = &mut test_rng();
+        let parameters = CRH::<Fr, TestHash>::setup(rng).unwrap();
+        // choose random input in the range [0, beta-1] 
+        let mut input: Vec<Fr> = (0..INPUT_LEN)
+            .map(|_| Fr::from(rng.gen::<u64>() % (TestHash::BETA as u64)))
+            .collect();
+        input[0] = Fr::from(TestHash::BETA as u64);
+        // input element is out of range
+        let _ = CRH::<Fr, TestHash>::evaluate(&parameters, input).unwrap();
+    }
 }
